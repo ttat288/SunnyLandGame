@@ -174,6 +174,17 @@ public class PlayerController : MonoBehaviour
         {
             state = State.idle;
         }
+        if (state == State.running || state == State.idle)
+        {
+            if (!col.IsTouchingLayers(ground))
+            {
+                state = State.falling;
+                if (col.IsTouchingLayers(ground))
+                {
+                    footstep.Play();
+                }
+            }
+        }
     }
 
     private void Footstep()
