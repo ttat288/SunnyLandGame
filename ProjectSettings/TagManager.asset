@@ -47,8 +47,14 @@ TagManager:
   - name: Back
     uniqueID: 3725482317
     locked: 0
+  - name: CustomBehind
+    uniqueID: 3043532563
+    locked: 0
   - name: Entity
     uniqueID: 2216724583
+    locked: 0
+  - name: CustomFront
+    uniqueID: 3711740943
     locked: 0
   - name: Fore
     uniqueID: 3355969481

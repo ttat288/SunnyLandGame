@@ -173,8 +173,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4a589cb160b3084cb56c1e679a7d7d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftCap: 97.15
-  rightCap: 116.23
+  leftCap: 152.62
+  rightCap: 166.84
   speed: 5
   ground:
     serializedVersion: 2
@@ -211,7 +211,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: b9eff218e132a4e76be78840eca96fb2, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0

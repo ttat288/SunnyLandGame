@@ -95,7 +95,6 @@ public class PlayerController : MonoBehaviour
                     rb.velocity = new Vector2(hurtForce, rb.velocity.y);
                 }
 
-                // Thiết lập biến để báo hiệu rằng cần khôi phục lại trường Material
                 shouldRestoreMaterial = true;
             }
         }
