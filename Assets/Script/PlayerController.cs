@@ -95,6 +95,7 @@ public class PlayerController : MonoBehaviour
                     rb.velocity = new Vector2(hurtForce, rb.velocity.y);
                 }
 
+                // Thiết lập biến để báo hiệu rằng cần khôi phục lại trường Material
                 shouldRestoreMaterial = true;
             }
         }
@@ -112,26 +113,35 @@ public class PlayerController : MonoBehaviour
     private void Movement()
     {
         float hDirection = Input.GetAxisRaw("Horizontal");
-        if (hDirection < 0)
+        if (!IsTouchingWall())
         {
-            rb.velocity = new Vector2(-speed, rb.velocity.y);
-            transform.localScale = new Vector2(-1, 1);
-        }
-        else if (hDirection > 0)
-        {
-            rb.velocity = new Vector2(speed, rb.velocity.y);
-            transform.localScale = new Vector2(1, 1);
-        }
-        else
-        {
-            rb.velocity = new Vector2(0, rb.velocity.y); // Dừng vận tốc khi không có input
-        }
+            if (hDirection < 0)
+            {
+                rb.velocity = new Vector2(-speed, rb.velocity.y);
+                transform.localScale = new Vector2(-1, 1);
+            }
+            else if (hDirection > 0)
+            {
+                rb.velocity = new Vector2(speed, rb.velocity.y);
+                transform.localScale = new Vector2(1, 1);
+            }
+            else
+            {
+                rb.velocity = new Vector2(0, rb.velocity.y); // Dừng vận tốc khi không có input
+            }
 
-        // Kiểm tra nếu người chơi đang giữ phím Space và nhân vật đang chạm vào mặt đất
-        if (Input.GetKey(KeyCode.Space) && col.IsTouchingLayers(ground) && state != State.jumping)
-        {
-            Jump();
+            // Kiểm tra nếu người chơi đang giữ phím Space và nhân vật đang chạm vào mặt đất
+            if (Input.GetKey(KeyCode.Space) && col.IsTouchingLayers(ground) && state != State.jumping)
+            {
+                Jump();
+            }
         }
+    }
+
+    private bool IsTouchingWall()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.right * transform.localScale.x, 0.1f, ground);
+        return hit.collider != null;
     }
 
     private void Jump()
