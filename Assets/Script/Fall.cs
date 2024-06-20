@@ -10,7 +10,11 @@ public class Fall : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+            if (player != null)
+            {
+                player.Respawn();
+            }
         }
     }
 }
