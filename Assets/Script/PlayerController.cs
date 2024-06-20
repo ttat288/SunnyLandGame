@@ -17,11 +17,12 @@ public class PlayerController : MonoBehaviour
     public Animator anim;
     private Collider2D col;
     private bool shouldRestoreMaterial = false;
-
-    private enum State { idle, running, jumping, falling, hurt }
+    private bool onLadder;
+    private enum State { idle, running, jumping, falling, hurt, climb, idleclimb}
     private State state = State.idle;
     [SerializeField] private LayerMask ground;
     [SerializeField] private float speed = 5f;
+    [SerializeField] private float climbspeed = 3f;
     [SerializeField] private float jumpForce = 10f;
     [SerializeField] private int cherries = 0;
     [SerializeField] private TextMeshProUGUI cherryText;
@@ -57,6 +58,22 @@ public class PlayerController : MonoBehaviour
     }
     private void Update()
     {
+        if (onLadder)
+        {
+            
+            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+            {
+                rb.velocity = new Vector2(rb.velocity.x, climbspeed);
+            }
+            else if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+            {
+                rb.velocity = new Vector2(rb.velocity.x, -climbspeed);
+            }
+            else
+            {
+                rb.velocity = new Vector2(rb.velocity.x, 0);
+            }
+        }
 
         // Kiểm tra nếu cần khôi phục lại trường Material và hàm OnCollisionEnter2D đã kết thúc
         if (shouldRestoreMaterial && state != State.hurt)
@@ -86,6 +103,13 @@ public class PlayerController : MonoBehaviour
             cherries++;
             cherryText.text = cherries.ToString();
         }
+
+        if (collision.gameObject.tag == "ladder")
+        {
+            onLadder = true;
+            rb.gravityScale = 0; // Tắt trọng lực khi leo thang
+        }
+    
         if(collision.tag == "Gem")
         {
             gem.Play(); 
@@ -153,8 +177,17 @@ public class PlayerController : MonoBehaviour
                 tilemapRenderer.enabled = true;
             }
         }
+        
     }
 
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "ladder")
+        {
+            onLadder = false;
+            rb.gravityScale = 5; // Bật lại trọng lực khi rời khỏi thang
+        }
+    }
     private void Movement()
     {
         float hDirection = Input.GetAxisRaw("Horizontal");
@@ -182,6 +215,7 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
 
     private bool IsTouchingWall()
     {
@@ -230,7 +264,7 @@ public class PlayerController : MonoBehaviour
         }
         if (state == State.running || state == State.idle)
         {
-            if (!col.IsTouchingLayers(ground))
+            if (!col.IsTouchingLayers(ground) && !onLadder)
             {
                 state = State.falling;
                 if (col.IsTouchingLayers(ground))
@@ -239,13 +273,30 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+        if (onLadder)
+        {
+            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+            {
+                state = State.climb;
+            }
+            else
+            {
+                state = State.idleclimb;
+            }
+        }
     }
 
     private void Footstep()
     {
         footstep.Play();
     }
-
+    public void Respawn()
+    {
+        transform.position = CheckPoint.respawnPosition;
+        rb.velocity = Vector2.zero;
+        state = State.idle;
+        shouldRestoreMaterial = false;
+    }
     public float PlayerLocaltion()
     {
         return transform.position.x;

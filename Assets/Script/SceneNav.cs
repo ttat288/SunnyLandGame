@@ -1,9 +1,11 @@
 using System;
 using UnityEngine;
 using TMPro; // Add this namespace for TextMeshPro
+using System.Threading.Tasks; // Add this namespace for async/await
 
 public class SceneNav : MonoBehaviour
 {
+    MongoDBConnection mongoDBManager; // Change this to MongoDBConnection
     public GameObject loginPanel, signupPanel, menuPanel, notificationPanel;
 
     public TMP_InputField loginUsername, loginPassword, signupUsername, signupPassword, signupCPassword;
@@ -12,11 +14,14 @@ public class SceneNav : MonoBehaviour
 
     public int currentScreen = 0;
 
-    private string storedUsername;
-    private string storedPassword;
-
-    private void Start()
+    private async void Start()
     {
+        string connectionString = "mongodb+srv://tranthamanhtoan:Lorenkid113@travis.ocdpowr.mongodb.net/?retryWrites=true&w=majority&appName=Travis";
+        string databaseName = "sunnyland_game";
+        mongoDBManager = new MongoDBConnection(connectionString, databaseName);
+
+        await Task.Yield(); // Dummy await to prevent the warning
+
         switch (currentScreen)
         {
             case 0:
@@ -30,6 +35,7 @@ public class SceneNav : MonoBehaviour
                 break;
         }
     }
+
 
     public void ResetPanel()
     {
@@ -59,7 +65,7 @@ public class SceneNav : MonoBehaviour
         menuPanel.SetActive(true);
     }
 
-    public void LoginUser()
+    public async void LoginUser()
     {
         if (string.IsNullOrEmpty(loginUsername.text) || string.IsNullOrEmpty(loginPassword.text))
         {
@@ -67,10 +73,11 @@ public class SceneNav : MonoBehaviour
             return;
         }
 
-        if (loginUsername.text == storedUsername && loginPassword.text == storedPassword)
+        var user = await mongoDBManager.LoginUser(loginUsername.text, loginPassword.text);
+        if (user != null)
         {
             ShowNotificationMessage("Success", "Login successful!");
-            OpenMenuPanel(); // Switch to the profile panel on successful login
+            OpenMenuPanel();
         }
         else
         {
@@ -78,7 +85,7 @@ public class SceneNav : MonoBehaviour
         }
     }
 
-    public void SignUpUser()
+    public async void SignUpUser()
     {
         if (string.IsNullOrEmpty(signupUsername.text) || string.IsNullOrEmpty(signupPassword.text) || string.IsNullOrEmpty(signupCPassword.text))
         {
@@ -92,12 +99,16 @@ public class SceneNav : MonoBehaviour
             return;
         }
 
-        // Perform sign-up logic here
-        storedUsername = signupUsername.text;
-        storedPassword = signupPassword.text;
-
-        ShowNotificationMessage("Success", "Sign up successful! Please log in.");
-        OpenLoginPanel(); // Switch back to the login panel
+        bool success = await mongoDBManager.RegisterUser(signupUsername.text, signupPassword.text);
+        if (success)
+        {
+            ShowNotificationMessage("Success", "Sign up successful! Please log in.");
+            OpenLoginPanel();
+        }
+        else
+        {
+            ShowNotificationMessage("Error", "Username already exists.");
+        }
     }
 
     private void ShowNotificationMessage(string title, string message)

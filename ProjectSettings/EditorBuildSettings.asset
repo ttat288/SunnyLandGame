@@ -12,11 +12,14 @@ EditorBuildSettings:
     path: Assets/Scenes/SceneMain.unity
     guid: 421cb6653ab743e4e8edd4aeb622d674
   - enabled: 1
-    path: Assets/Scenes/Level 2.unity
+    path: Assets/Scenes/Level 1.unity
     guid: 55d458f653721d3419aac0181e8152fe
   - enabled: 0
     path: Assets/Scenes/Game.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/TheEnd.unity
+    guid: f89ceefdcbc4c7e42a8bebaefbe5e77d
   - enabled: 1
     path: Assets/Scenes/DarkMap.unity
     guid: 6491476729cf2da4aa6729a0d763c0bf
