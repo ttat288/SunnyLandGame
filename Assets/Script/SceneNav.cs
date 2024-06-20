@@ -20,6 +20,8 @@ public class SceneNav : MonoBehaviour
         string databaseName = "sunnyland_game";
         mongoDBManager = new MongoDBConnection(connectionString, databaseName);
 
+        await Task.Yield(); // Dummy await to prevent the warning
+
         switch (currentScreen)
         {
             case 0:
@@ -33,6 +35,7 @@ public class SceneNav : MonoBehaviour
                 break;
         }
     }
+
 
     public void ResetPanel()
     {
