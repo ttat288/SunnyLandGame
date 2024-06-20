@@ -29,13 +29,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioSource cherry;
     [SerializeField] private AudioSource footstep;
     [SerializeField] private AudioSource jumpSound;
+    [SerializeField] private AudioSource gem;
     [SerializeField] private int health;
     [SerializeField] private TextMeshProUGUI healthAmount;
     [SerializeField] private Slider playerHealthSlider;
     [SerializeField] private float maxHealth;
     [SerializeField] private float damage;
-
-
+    [SerializeField] private float powerup; 
+    [SerializeField] private int timeGem;
+    private bool checkTime;
+    private DateTime dateTime;
+    private float jumpForceOrigin;
+    private bool checkTrap;
     #endregion
 
     private void Start()
@@ -47,6 +52,8 @@ public class PlayerController : MonoBehaviour
         healthAmount.text = health.ToString();
         playerHealthSlider.maxValue = maxHealth;
         playerHealthSlider.value = maxHealth;
+        checkTime = false;
+        jumpForceOrigin = jumpForce;
     }
     private void Update()
     {
@@ -57,13 +64,17 @@ public class PlayerController : MonoBehaviour
             RestoreOriginalMaterial();
             shouldRestoreMaterial = false; // Đặt lại biến trạng thái
         }
-
         if (state != State.hurt)
         {
             Movement();
         }
         AnimationState();
         anim.SetInteger("state", (int)state);
+        if (checkTime && (DateTime.Now - dateTime).TotalSeconds >= timeGem)
+        {
+            jumpForce = jumpForceOrigin;
+            checkTime = false;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -75,7 +86,23 @@ public class PlayerController : MonoBehaviour
             cherries++;
             cherryText.text = cherries.ToString();
         }
+        if(collision.tag == "Gem")
+        {
+            gem.Play(); 
+            Destroy(collision.gameObject);
+            jumpForce = powerup; 
+            dateTime = DateTime.Now;
+            checkTime = true;
+        }
     }
+
+    private void ResetJumpForce()
+    {
+        jumpForce = jumpForceOrigin;
+        checkTime = false;
+    }
+
+
     private void RestoreOriginalMaterial()
     {
         // Khôi phục lại giá trị ban đầu của trường Material
@@ -110,6 +137,12 @@ public class PlayerController : MonoBehaviour
                 // Thiết lập biến để báo hiệu rằng cần khôi phục lại trường Material
                 shouldRestoreMaterial = true;
             }
+        }
+        if (other.gameObject.tag == "Trap")
+        {
+            
+            state = State.hurt;
+            HandleHealth();
         }
 
         if (other.gameObject.tag == "HiddenItem")
@@ -218,7 +251,7 @@ public class PlayerController : MonoBehaviour
         return transform.position.x;
     }
 
-    public void TakeDamage(float damage)
+    private void HandleHealth()
     {
         playerHealthSlider.value -= damage;
         if (playerHealthSlider.value <= 0)
@@ -232,10 +265,9 @@ public class PlayerController : MonoBehaviour
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
-
-    private void HandleHealth()
+    private void TakeDamage(int damageAmount)
     {
-        playerHealthSlider.value -= damage;
+        playerHealthSlider.value -= damageAmount;
         if (playerHealthSlider.value <= 0)
         {
             health -= 1;

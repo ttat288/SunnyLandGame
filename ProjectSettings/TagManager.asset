@@ -8,6 +8,7 @@ TagManager:
   - Enemy
   - HiddenItem
   - Hole
+  - Gem
   layers:
   - Default
   - TransparentFX

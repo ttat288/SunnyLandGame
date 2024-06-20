@@ -7,6 +7,7 @@ public class FireTrapScript : MonoBehaviour
     public float triggerInterval;
     private bool isTriggered = false;
     private ParticleSystem fireParticle;
+    [SerializeField] private AudioSource audio;
 
     void Start()
     {
@@ -37,7 +38,7 @@ public class FireTrapScript : MonoBehaviour
             PlayerController player = other.GetComponent<PlayerController>();
             if (player != null)
             {
-                player.TakeDamage(damage);
+                audio.Play();
             }
         }
     }
