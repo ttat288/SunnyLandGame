@@ -9,7 +9,6 @@ public class Bettle : Enemy
     [SerializeField] private float tolerance;
     [SerializeField] private float speed;
     [SerializeField] private float delayTime;
-
     private float delayStart;
 
     private void Start()
@@ -19,7 +18,9 @@ public class Bettle : Enemy
         {
             transform.position = points[0];
         }
+      
     }
+  
 
     private void Update()
     {

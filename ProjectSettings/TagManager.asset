@@ -8,6 +8,9 @@ TagManager:
   - Enemy
   - HiddenItem
   - Hole
+  - hidenEnemy
+  - Collectible
+  - ladder
   layers:
   - Default
   - TransparentFX
