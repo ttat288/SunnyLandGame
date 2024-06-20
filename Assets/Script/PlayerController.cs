@@ -243,7 +243,13 @@ public class PlayerController : MonoBehaviour
     {
         footstep.Play();
     }
-
+    public void Respawn()
+    {
+        transform.position = CheckPoint.respawnPosition;
+        rb.velocity = Vector2.zero;
+        state = State.idle;
+        shouldRestoreMaterial = false;
+    }
     public float PlayerLocaltion()
     {
         return transform.position.x;
