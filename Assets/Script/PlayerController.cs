@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
@@ -28,6 +29,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioSource cherry;
     [SerializeField] private AudioSource footstep;
     [SerializeField] private AudioSource jumpSound;
+    [SerializeField] private int health;
+    [SerializeField] private TextMeshProUGUI healthAmount;
+    [SerializeField] private Slider playerHealthSlider;
+    [SerializeField] private float maxHealth;
+    [SerializeField] private float damage;
+
+
     #endregion
 
     private void Start()
@@ -36,6 +44,9 @@ public class PlayerController : MonoBehaviour
         anim = GetComponent<Animator>();
         col = GetComponent<Collider2D>();
         originalMaterial = rb.sharedMaterial;
+        healthAmount.text = health.ToString();
+        playerHealthSlider.maxValue = maxHealth;
+        playerHealthSlider.value = maxHealth;
     }
     private void Update()
     {
@@ -84,6 +95,7 @@ public class PlayerController : MonoBehaviour
             else
             {
                 state = State.hurt;
+                HandleHealth();
                 if (other.gameObject.transform.position.x > transform.position.x)
                 {
                     rb.sharedMaterial = null;
@@ -204,5 +216,35 @@ public class PlayerController : MonoBehaviour
     public float PlayerLocaltion()
     {
         return transform.position.x;
+    }
+
+    public void TakeDamage(float damage)
+    {
+        playerHealthSlider.value -= damage;
+        if (playerHealthSlider.value <= 0)
+        {
+            health -= 1;
+            healthAmount.text = health.ToString();
+            playerHealthSlider.value = maxHealth;
+        }
+        if (health <= 0)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+    }
+
+    private void HandleHealth()
+    {
+        playerHealthSlider.value -= damage;
+        if (playerHealthSlider.value <= 0)
+        {
+            health -= 1;
+            healthAmount.text = health.ToString();
+            playerHealthSlider.value = maxHealth;
+        }
+        if (health <= 0)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
     }
 }
