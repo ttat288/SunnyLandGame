@@ -12,13 +12,16 @@ public class Dino : Enemy
     [SerializeField] private LayerMask ground;
 
     private Collider2D coll;
+
     private bool facingLeft = true;
     // Start is called before the first frame update
     protected override void Start()
     {
         base.Start();
         coll = GetComponent<Collider2D>();
+       
     }
+   
 
     // Update is called once per frame
     private void Update()
@@ -36,6 +39,7 @@ public class Dino : Enemy
         {
             anim.SetBool("Falling", false);
         }
+        Move();
     }
 
     private void Idle() { }
