@@ -200,7 +200,14 @@ public class PlayerController : MonoBehaviour
     {
         footstep.Play();
     }
-
+    public void Respawn()
+    {
+        transform.position = CheckPoint.respawnPosition;
+        rb.velocity = Vector2.zero;
+        state = State.idle;
+        shouldRestoreMaterial = false;
+        Debug.Log("Player respawned at: " + CheckPoint.respawnPosition + " with ID: " + CheckPoint.currentCheckpointID);
+    }
     public float PlayerLocaltion()
     {
         return transform.position.x;
