@@ -11,6 +11,7 @@ TagManager:
   - hidenEnemy
   - Collectible
   - ladder
+  - Gem
   layers:
   - Default
   - TransparentFX
