@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Assets.Script;
+using Assets.Script.singleton;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -38,14 +40,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float damage;
     [SerializeField] private float powerup; 
     [SerializeField] private int timeGem;
+    [SerializeField] private TextMeshProUGUI nextBtn;
+    [SerializeField] private GameObject leadderboard;
     private bool checkTime;
     private DateTime dateTime;
     private float jumpForceOrigin;
     private bool checkTrap;
+    private bool isLeadderboadOpen = false;
+    CurrentScene currentScene;
     #endregion
 
     private void Start()
     {
+        currentScene = CurrentScene.Instance;
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         col = GetComponent<Collider2D>();
@@ -58,6 +65,11 @@ public class PlayerController : MonoBehaviour
     }
     private void Update()
     {
+         if(isLeadderboadOpen)
+        {
+            leadderboard.SetActive(true);
+        }
+
         if (onLadder)
         {
             
@@ -81,7 +93,7 @@ public class PlayerController : MonoBehaviour
             RestoreOriginalMaterial();
             shouldRestoreMaterial = false; // Đặt lại biến trạng thái
         }
-        if (state != State.hurt)
+        if (state != State.hurt && !isLeadderboadOpen)
         {
             Movement();
         }
@@ -102,6 +114,7 @@ public class PlayerController : MonoBehaviour
             Destroy(collision.gameObject);
             cherries++;
             cherryText.text = cherries.ToString();
+            currentScene.CurrentCherry = cherries;
         }
 
         if (collision.gameObject.tag == "ladder")
@@ -310,10 +323,28 @@ public class PlayerController : MonoBehaviour
             health -= 1;
             healthAmount.text = health.ToString();
             playerHealthSlider.value = maxHealth;
+            Respawn();
         }
         if (health <= 0)
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+        
+    }
+
+    public void LostLife()
+    {
+        health -= 1;
+        playerHealthSlider.value = maxHealth;
+
+        if(health <0)
+        {
+            nextBtn.text = "Play again";
+            isLeadderboadOpen = true;
+        }
+        else
+        {
+            healthAmount.text = health.ToString();
         }
     }
     private void TakeDamage(int damageAmount)

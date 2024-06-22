@@ -1,33 +1,32 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Assets.Script.singleton;
+using Assets.Script;
 
 public class LeaderboardManager : MonoBehaviour
 {
     public GameObject scoreEntryPrefab;
     public Transform scoresContainer;
-    public List<HighscoreEntry> highscoreEntries = new List<HighscoreEntry>();
+    private static List<HighscoreEntry> highscoreEntries = new List<HighscoreEntry>();
+    private MongoDBConnection mongoDBConnection;
+    private User user;
 
-    private void Start()
+    private async void Start()
     {
-        // Test data
-        highscoreEntries = new List<HighscoreEntry>();
-        highscoreEntries.Add(new HighscoreEntry { playerName = "Player1", playerScore = 100 });
-        highscoreEntries.Add(new HighscoreEntry { playerName = "Player2", playerScore = 60 });
-        highscoreEntries.Add(new HighscoreEntry { playerName = "Player3", playerScore = 80 });
-        highscoreEntries.Add(new HighscoreEntry { playerName = "Player4", playerScore = 50 });
-        highscoreEntries.Add(new HighscoreEntry { playerName = "Player5", playerScore = 30 });
-        highscoreEntries.Add(new HighscoreEntry { playerName = "Player6", playerScore = 10 });
-        highscoreEntries.Add(new HighscoreEntry { playerName = "Player7", playerScore = 30 });
-        highscoreEntries.Add(new HighscoreEntry { playerName = "Player8", playerScore = 40 });
-        highscoreEntries.Add(new HighscoreEntry { playerName = "Player9", playerScore = 50 });
-        highscoreEntries.Add(new HighscoreEntry { playerName = "Player10", playerScore = 60 });
+        user = User.Instance;
+        mongoDBConnection = new MongoDBConnection();
+
+        var topRanks = await mongoDBConnection.GetTopRank(user.Id);
+        highscoreEntries.AddRange(topRanks);
         highscoreEntries.Sort((a, b) => b.playerScore.CompareTo(a.playerScore));
+
         // Call update UI function
-        UpdateHighscoreUI();
+        await UpdateHighscoreUI();
     }
 
-    private void UpdateHighscoreUI()
+    private async Task UpdateHighscoreUI()
     {
         // Clear existing entries
         foreach (Transform child in scoresContainer)
@@ -43,15 +42,8 @@ public class LeaderboardManager : MonoBehaviour
 
             // Set text of the new entry
             Text[] texts = newEntry.GetComponentsInChildren<Text>();
-            texts[0].text = entry.playerName;
+            texts[0].text = await mongoDBConnection.getNameById(entry.playerId);
             texts[1].text = entry.playerScore.ToString();
         }
     }
-}
-
-[System.Serializable]
-public class HighscoreEntry
-{
-    public string playerName;
-    public int playerScore;
 }

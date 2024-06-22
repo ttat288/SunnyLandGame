@@ -2,6 +2,8 @@ using System;
 using UnityEngine;
 using TMPro; // Add this namespace for TextMeshPro
 using System.Threading.Tasks; // Add this namespace for async/await
+using Assets.Script.singleton;
+using Assets.Script;
 
 public class SceneNav : MonoBehaviour
 {
@@ -12,16 +14,21 @@ public class SceneNav : MonoBehaviour
 
     public TMP_Text notif_Title_Text, notif_Message_Text;
 
-    public int currentScreen = 0;
+    //singleton scene
+    static CurrentScene singletonScene;
+    static User singletonUser;
+    public int currentScreen ;
 
     private async void Start()
     {
-        string connectionString = "mongodb+srv://tranthamanhtoan:Lorenkid113@travis.ocdpowr.mongodb.net/?retryWrites=true&w=majority&appName=Travis";
-        string databaseName = "sunnyland_game";
-        mongoDBManager = new MongoDBConnection(connectionString, databaseName);
+        singletonScene = CurrentScene.Instance; // Ensure singleton is initialized
+        currentScreen = singletonScene.CurrentSceneIndex; 
+
+        
+        mongoDBManager = new MongoDBConnection();
 
         await Task.Yield(); // Dummy await to prevent the warning
-
+        
         switch (currentScreen)
         {
             case 0:
@@ -47,6 +54,7 @@ public class SceneNav : MonoBehaviour
     public void OpenLoginPanel()
     {
         currentScreen = 0;
+        singletonScene.CurrentSceneIndex = 0;
         ResetPanel();
         loginPanel.SetActive(true);
     }
@@ -54,6 +62,7 @@ public class SceneNav : MonoBehaviour
     public void OpenSignUpPanel()
     {
         currentScreen = 1;
+        singletonScene.CurrentSceneIndex = 1;
         ResetPanel();
         signupPanel.SetActive(true);
     }
@@ -61,6 +70,7 @@ public class SceneNav : MonoBehaviour
     public void OpenMenuPanel()
     {
         currentScreen = 2;
+        singletonScene.CurrentSceneIndex = 2;
         ResetPanel();
         menuPanel.SetActive(true);
     }
@@ -74,6 +84,7 @@ public class SceneNav : MonoBehaviour
         }
 
         var user = await mongoDBManager.LoginUser(loginUsername.text, loginPassword.text);
+        singletonUser = user;
         if (user != null)
         {
             ShowNotificationMessage("Success", "Login successful!");
