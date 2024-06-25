@@ -33,6 +33,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioSource footstep;
     [SerializeField] private AudioSource jumpSound;
     [SerializeField] private AudioSource gem;
+    [SerializeField] private AudioSource song1;
+    [SerializeField] private AudioSource song2;
+    [SerializeField] private AudioSource song3;
+    [SerializeField] private AudioSource song4;
+    [SerializeField] private AudioSource song5;
     [SerializeField] private int health;
     [SerializeField] private TextMeshProUGUI healthAmount;
     [SerializeField] private Slider playerHealthSlider;
@@ -49,6 +54,8 @@ public class PlayerController : MonoBehaviour
     private bool isLeadderboadOpen = false;
     CurrentScene currentScene;
     private List<Enemy> enemies; // Thêm danh sách các quái vật
+    private AudioSource[] songs;
+    private int currentSongIndex = 0;
     #endregion
 
     private void Start()
@@ -66,6 +73,10 @@ public class PlayerController : MonoBehaviour
 
         // Tìm tất cả các đối tượng quái vật trong cảnh
         enemies = new List<Enemy>(FindObjectsOfType<Enemy>());
+
+        // Initialize songs array and play the first song
+        songs = new AudioSource[] { song1, song2, song3, song4, song5 };
+        PlayCurrentSong();
     }
 
     private void Update()
@@ -135,6 +146,11 @@ public class PlayerController : MonoBehaviour
             dateTime = DateTime.Now;
             checkTime = true;
         }
+
+        if (collision.tag == "playSong")
+        {
+            ChangeSong();
+        }
     }
 
     private void ResetJumpForce()
@@ -191,6 +207,10 @@ public class PlayerController : MonoBehaviour
             {
                 tilemapRenderer.enabled = true;
             }
+        }
+        if (other.gameObject.tag == "playSong")
+        {
+            ChangeSong();
         }
     }
 
@@ -369,5 +389,26 @@ public class PlayerController : MonoBehaviour
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
+    }
+
+    private void PlayCurrentSong()
+    {
+        // Stop all songs
+        foreach (var song in songs)
+        {
+            song.Stop();
+        }
+        // Play the current song
+        songs[currentSongIndex].Play();
+    }
+
+    private void ChangeSong()
+    {
+        // Stop the current song
+        songs[currentSongIndex].Stop();
+        // Increment the song index, loop back to 0 if it exceeds the number of songs
+        currentSongIndex = (currentSongIndex + 1) % songs.Length;
+        // Play the new song
+        songs[currentSongIndex].Play();
     }
 }

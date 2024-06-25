@@ -12,6 +12,7 @@ TagManager:
   - Collectible
   - ladder
   - Gem
+  - playSong
   layers:
   - Default
   - TransparentFX
