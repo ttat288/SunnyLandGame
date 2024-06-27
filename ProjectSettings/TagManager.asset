@@ -11,6 +11,8 @@ TagManager:
   - hidenEnemy
   - Collectible
   - ladder
+  - Gem
+  - playSong
   layers:
   - Default
   - TransparentFX

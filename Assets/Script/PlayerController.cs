@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Assets.Script;
+using Assets.Script.singleton;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
@@ -17,7 +20,7 @@ public class PlayerController : MonoBehaviour
     private Collider2D col;
     private bool shouldRestoreMaterial = false;
     private bool onLadder;
-    private enum State { idle, running, jumping, falling, hurt, climb, idleclimb}
+    private enum State { idle, running, jumping, falling, hurt, climb, idleclimb }
     private State state = State.idle;
     [SerializeField] private LayerMask ground;
     [SerializeField] private float speed = 5f;
@@ -29,20 +32,62 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioSource cherry;
     [SerializeField] private AudioSource footstep;
     [SerializeField] private AudioSource jumpSound;
+    [SerializeField] private AudioSource gem;
+    [SerializeField] private AudioSource song1;
+    [SerializeField] private AudioSource song2;
+    [SerializeField] private AudioSource song3;
+    [SerializeField] private AudioSource song4;
+    [SerializeField] private AudioSource song5;
+    [SerializeField] private int health;
+    [SerializeField] private TextMeshProUGUI healthAmount;
+    [SerializeField] private Slider playerHealthSlider;
+    [SerializeField] private float maxHealth;
+    [SerializeField] private float damage;
+    [SerializeField] private float powerup;
+    [SerializeField] private int timeGem;
+    [SerializeField] private TextMeshProUGUI nextBtn;
+    [SerializeField] private GameObject leadderboard;
+    private bool checkTime;
+    private DateTime dateTime;
+    private float jumpForceOrigin;
+    private bool checkTrap;
+    private bool isLeadderboadOpen = false;
+    CurrentScene currentScene;
+    private List<Enemy> enemies; // Thêm danh sách các quái vật
+    private AudioSource[] songs;
+    private int currentSongIndex = 0;
     #endregion
 
     private void Start()
     {
+        currentScene = CurrentScene.Instance;
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         col = GetComponent<Collider2D>();
         originalMaterial = rb.sharedMaterial;
+        healthAmount.text = health.ToString();
+        playerHealthSlider.maxValue = maxHealth;
+        playerHealthSlider.value = maxHealth;
+        checkTime = false;
+        jumpForceOrigin = jumpForce;
+
+        // Tìm tất cả các đối tượng quái vật trong cảnh
+        enemies = new List<Enemy>(FindObjectsOfType<Enemy>());
+
+        // Initialize songs array and play the first song
+        songs = new AudioSource[] { song1, song2, song3, song4, song5 };
+        PlayCurrentSong();
     }
+
     private void Update()
     {
+        if (isLeadderboadOpen)
+        {
+            leadderboard.SetActive(true);
+        }
+
         if (onLadder)
         {
-            
             if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
             {
                 rb.velocity = new Vector2(rb.velocity.x, climbspeed);
@@ -63,13 +108,17 @@ public class PlayerController : MonoBehaviour
             RestoreOriginalMaterial();
             shouldRestoreMaterial = false; // Đặt lại biến trạng thái
         }
-
-        if (state != State.hurt)
+        if (state != State.hurt && !isLeadderboadOpen)
         {
             Movement();
         }
         AnimationState();
         anim.SetInteger("state", (int)state);
+        if (checkTime && (DateTime.Now - dateTime).TotalSeconds >= timeGem)
+        {
+            jumpForce = jumpForceOrigin;
+            checkTime = false;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -80,13 +129,36 @@ public class PlayerController : MonoBehaviour
             Destroy(collision.gameObject);
             cherries++;
             cherryText.text = cherries.ToString();
+            currentScene.CurrentCherry = cherries;
         }
+
         if (collision.gameObject.tag == "ladder")
         {
             onLadder = true;
             rb.gravityScale = 0; // Tắt trọng lực khi leo thang
         }
+
+        if (collision.tag == "Gem")
+        {
+            gem.Play();
+            Destroy(collision.gameObject);
+            jumpForce = powerup;
+            dateTime = DateTime.Now;
+            checkTime = true;
+        }
+
+        if (collision.tag == "playSong")
+        {
+            ChangeSong();
+        }
     }
+
+    private void ResetJumpForce()
+    {
+        jumpForce = jumpForceOrigin;
+        checkTime = false;
+    }
+
     private void RestoreOriginalMaterial()
     {
         // Khôi phục lại giá trị ban đầu của trường Material
@@ -106,6 +178,7 @@ public class PlayerController : MonoBehaviour
             else
             {
                 state = State.hurt;
+                HandleHealth();
                 if (other.gameObject.transform.position.x > transform.position.x)
                 {
                     rb.sharedMaterial = null;
@@ -121,6 +194,11 @@ public class PlayerController : MonoBehaviour
                 shouldRestoreMaterial = true;
             }
         }
+        if (other.gameObject.tag == "Trap")
+        {
+            state = State.hurt;
+            HandleHealth();
+        }
 
         if (other.gameObject.tag == "HiddenItem")
         {
@@ -130,7 +208,10 @@ public class PlayerController : MonoBehaviour
                 tilemapRenderer.enabled = true;
             }
         }
-        
+        if (other.gameObject.tag == "playSong")
+        {
+            ChangeSong();
+        }
     }
 
     private void OnTriggerExit2D(Collider2D other)
@@ -141,6 +222,7 @@ public class PlayerController : MonoBehaviour
             rb.gravityScale = 5; // Bật lại trọng lực khi rời khỏi thang
         }
     }
+
     private void Movement()
     {
         float hDirection = Input.GetAxisRaw("Horizontal");
@@ -168,7 +250,6 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-
 
     private bool IsTouchingWall()
     {
@@ -243,15 +324,91 @@ public class PlayerController : MonoBehaviour
     {
         footstep.Play();
     }
+
     public void Respawn()
     {
         transform.position = CheckPoint.respawnPosition;
         rb.velocity = Vector2.zero;
         state = State.idle;
         shouldRestoreMaterial = false;
+
+        // Reset lại tất cả các quái vật khi nhân vật respawn
+        foreach (var enemy in enemies)
+        {
+            enemy.ResetEnemy();
+        }
     }
+
     public float PlayerLocaltion()
     {
         return transform.position.x;
+    }
+
+    private void HandleHealth()
+    {
+        playerHealthSlider.value -= damage;
+        if (playerHealthSlider.value <= 0)
+        {
+            health -= 1;
+            healthAmount.text = health.ToString();
+            playerHealthSlider.value = maxHealth;
+            Respawn();
+        }
+        if (health <= 0)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+    }
+
+    public void LostLife()
+    {
+        health -= 1;
+        playerHealthSlider.value = maxHealth;
+
+        if (health < 0)
+        {
+            nextBtn.text = "Play again";
+            isLeadderboadOpen = true;
+        }
+        else
+        {
+            healthAmount.text = health.ToString();
+        }
+    }
+
+    private void TakeDamage(int damageAmount)
+    {
+        playerHealthSlider.value -= damageAmount;
+        if (playerHealthSlider.value <= 0)
+        {
+            health -= 1;
+            healthAmount.text = health.ToString();
+            playerHealthSlider.value = maxHealth;
+        }
+        if (health <= 0)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+    }
+
+    private void PlayCurrentSong()
+    {
+        // Stop all songs
+        foreach (var song in songs)
+        {
+            song.Stop();
+        }
+        // Play the current song
+        songs[currentSongIndex].Play();
+    }
+
+    private void ChangeSong()
+    {
+        // Stop the current song
+        songs[currentSongIndex].Stop();
+        // Increment the song index, loop back to 0 if it exceeds the number of songs
+        currentSongIndex = (currentSongIndex + 1) % songs.Length;
+        // Play the new song
+        songs[currentSongIndex].Play();
     }
 }

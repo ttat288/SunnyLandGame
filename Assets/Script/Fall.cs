@@ -13,6 +13,7 @@ public class Fall : MonoBehaviour
             PlayerController player = collision.gameObject.GetComponent<PlayerController>();
             if (player != null)
             {
+                player.LostLife();
                 player.Respawn();
             }
         }
