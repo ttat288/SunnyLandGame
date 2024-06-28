@@ -344,8 +344,12 @@ public class PlayerController : MonoBehaviour
         return transform.position.x;
     }
 
-    private void HandleHealth()
+    public void HandleHealth(bool heal = false )
     {
+        if ( heal )
+        {
+            damage = 0.05f;
+        }
         playerHealthSlider.value -= damage;
         if (playerHealthSlider.value <= 0)
         {
@@ -356,7 +360,8 @@ public class PlayerController : MonoBehaviour
         }
         if (health <= 0)
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            nextBtn.text = "Play again";
+            isLeadderboadOpen = true;
         }
     }
 
@@ -365,7 +370,7 @@ public class PlayerController : MonoBehaviour
         health -= 1;
         playerHealthSlider.value = maxHealth;
 
-        if (health < 0)
+        if(health <=0)
         {
             nextBtn.text = "Play again";
             isLeadderboadOpen = true;

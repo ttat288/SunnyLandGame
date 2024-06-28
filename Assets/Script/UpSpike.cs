@@ -12,6 +12,8 @@ public class UpSpike : MonoBehaviour
     private int pointCount;
     private int direction = 1;
     private bool isPlayerInside = false;
+    private BoxCollider2D boxCollider2D;
+    private CapsuleCollider2D capsuleCollider2D;
 
     private void Awake()
     {
@@ -24,6 +26,8 @@ public class UpSpike : MonoBehaviour
 
     private void Start()
     {
+        boxCollider2D = GetComponent<BoxCollider2D>();
+        capsuleCollider2D = GetComponent<CapsuleCollider2D>();
         pointCount = wayPoints.Length;
         pointIndex = 1;
         targetPos = wayPoints[pointIndex].transform.position;
@@ -47,6 +51,27 @@ public class UpSpike : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             isPlayerInside = true;
+            Debug.Log("Player has collided with the spike!");
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(capsuleCollider2D != null && capsuleCollider2D.IsTouching(collision.collider) )         
+        {
+            PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+            if (player != null)
+            {
+                player.HandleHealth(true);
+            }
+        }
+        if (boxCollider2D != null && boxCollider2D.IsTouching(collision.collider))
+        {
+            PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+            if (player != null)
+            {
+                player.HandleHealth(true);
+            }
         }
     }
 
@@ -55,6 +80,7 @@ public class UpSpike : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             isPlayerInside = false;
+
         }
     }
 
