@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 public class MushroomExplosion : MonoBehaviour
 {
@@ -19,8 +20,19 @@ public class MushroomExplosion : MonoBehaviour
         if (collision.gameObject.tag == "Player" || collision.gameObject.tag == "Bullet")
         {
             Explode();
+            PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+            if (player != null)
+            {
+                player.HandleHealth();
+            }
         }
     }
+
+
+    //IEnumerator WaitSecond(float seconds)
+    //{
+    //    yield return WaitForSeconds(seconds);
+    //}
 
     void Explode()
     {

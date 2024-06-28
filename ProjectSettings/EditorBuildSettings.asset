@@ -21,6 +21,9 @@ EditorBuildSettings:
     path: Assets/Scenes/NhatHoang.unity
     guid: a9d5be242333fdd47a8537632e6a1e32
   - enabled: 1
+    path: Assets/Scenes/tuananh.Map.unity
+    guid: 9e3efa9e879366c4b955b4a088f5d0e7
+  - enabled: 1
     path: Assets/Scenes/TheEnd.unity
     guid: f89ceefdcbc4c7e42a8bebaefbe5e77d
   m_configObjects: {}
