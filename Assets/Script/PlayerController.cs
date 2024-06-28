@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
     private Collider2D col;
     private bool shouldRestoreMaterial = false;
     private bool onLadder;
-    private enum State { idle, running, jumping, falling, hurt, climb, idleclimb}
+    private enum State { idle, running, jumping, falling, hurt, climb, idleclimb }
     private State state = State.idle;
     [SerializeField] private LayerMask ground;
     [SerializeField] private float speed = 5f;
@@ -33,12 +33,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioSource footstep;
     [SerializeField] private AudioSource jumpSound;
     [SerializeField] private AudioSource gem;
+    [SerializeField] private AudioSource song1;
+    [SerializeField] private AudioSource song2;
+    [SerializeField] private AudioSource song3;
+    [SerializeField] private AudioSource song4;
+    [SerializeField] private AudioSource song5;
     [SerializeField] private int health;
     [SerializeField] private TextMeshProUGUI healthAmount;
     [SerializeField] private Slider playerHealthSlider;
     [SerializeField] private float maxHealth;
     [SerializeField] private float damage;
-    [SerializeField] private float powerup; 
+    [SerializeField] private float powerup;
     [SerializeField] private int timeGem;
     [SerializeField] private TextMeshProUGUI nextBtn;
     [SerializeField] private GameObject leadderboard;
@@ -48,6 +53,9 @@ public class PlayerController : MonoBehaviour
     private bool checkTrap;
     private bool isLeadderboadOpen = false;
     CurrentScene currentScene;
+    private List<Enemy> enemies; // Thêm danh sách các quái vật
+    private AudioSource[] songs;
+    private int currentSongIndex = 0;
     #endregion
 
     private void Start()
@@ -62,17 +70,24 @@ public class PlayerController : MonoBehaviour
         playerHealthSlider.value = maxHealth;
         checkTime = false;
         jumpForceOrigin = jumpForce;
+
+        // Tìm tất cả các đối tượng quái vật trong cảnh
+        enemies = new List<Enemy>(FindObjectsOfType<Enemy>());
+
+        // Initialize songs array and play the first song
+        songs = new AudioSource[] { song1, song2, song3, song4, song5 };
+        PlayCurrentSong();
     }
+
     private void Update()
     {
-         if(isLeadderboadOpen)
+        if (isLeadderboadOpen)
         {
             leadderboard.SetActive(true);
         }
 
         if (onLadder)
         {
-            
             if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
             {
                 rb.velocity = new Vector2(rb.velocity.x, climbspeed);
@@ -122,14 +137,19 @@ public class PlayerController : MonoBehaviour
             onLadder = true;
             rb.gravityScale = 0; // Tắt trọng lực khi leo thang
         }
-    
-        if(collision.tag == "Gem")
+
+        if (collision.tag == "Gem")
         {
-            gem.Play(); 
+            gem.Play();
             Destroy(collision.gameObject);
-            jumpForce = powerup; 
+            jumpForce = powerup;
             dateTime = DateTime.Now;
             checkTime = true;
+        }
+
+        if (collision.tag == "playSong")
+        {
+            ChangeSong();
         }
     }
 
@@ -138,7 +158,6 @@ public class PlayerController : MonoBehaviour
         jumpForce = jumpForceOrigin;
         checkTime = false;
     }
-
 
     private void RestoreOriginalMaterial()
     {
@@ -177,7 +196,6 @@ public class PlayerController : MonoBehaviour
         }
         if (other.gameObject.tag == "Trap")
         {
-            
             state = State.hurt;
             HandleHealth();
         }
@@ -190,7 +208,10 @@ public class PlayerController : MonoBehaviour
                 tilemapRenderer.enabled = true;
             }
         }
-        
+        if (other.gameObject.tag == "playSong")
+        {
+            ChangeSong();
+        }
     }
 
     private void OnTriggerExit2D(Collider2D other)
@@ -201,6 +222,7 @@ public class PlayerController : MonoBehaviour
             rb.gravityScale = 5; // Bật lại trọng lực khi rời khỏi thang
         }
     }
+
     private void Movement()
     {
         float hDirection = Input.GetAxisRaw("Horizontal");
@@ -228,7 +250,6 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-
 
     private bool IsTouchingWall()
     {
@@ -303,13 +324,21 @@ public class PlayerController : MonoBehaviour
     {
         footstep.Play();
     }
+
     public void Respawn()
     {
         transform.position = CheckPoint.respawnPosition;
         rb.velocity = Vector2.zero;
         state = State.idle;
         shouldRestoreMaterial = false;
+
+        // Reset lại tất cả các quái vật khi nhân vật respawn
+        foreach (var enemy in enemies)
+        {
+            enemy.ResetEnemy();
+        }
     }
+
     public float PlayerLocaltion()
     {
         return transform.position.x;
@@ -334,7 +363,6 @@ public class PlayerController : MonoBehaviour
             nextBtn.text = "Play again";
             isLeadderboadOpen = true;
         }
-        
     }
 
     public void LostLife()
@@ -352,6 +380,7 @@ public class PlayerController : MonoBehaviour
             healthAmount.text = health.ToString();
         }
     }
+
     private void TakeDamage(int damageAmount)
     {
         playerHealthSlider.value -= damageAmount;
@@ -365,5 +394,26 @@ public class PlayerController : MonoBehaviour
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
+    }
+
+    private void PlayCurrentSong()
+    {
+        // Stop all songs
+        foreach (var song in songs)
+        {
+            song.Stop();
+        }
+        // Play the current song
+        songs[currentSongIndex].Play();
+    }
+
+    private void ChangeSong()
+    {
+        // Stop the current song
+        songs[currentSongIndex].Stop();
+        // Increment the song index, loop back to 0 if it exceeds the number of songs
+        currentSongIndex = (currentSongIndex + 1) % songs.Length;
+        // Play the new song
+        songs[currentSongIndex].Play();
     }
 }

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,10 +7,11 @@ public class FallFaceBlock : MonoBehaviour
     private Rigidbody2D rb;
     private bool isFall = false;
     public Transform restorePoint;
+    public float dropSpeed = 12f;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        rb.gravityScale = 8;
+        rb.gravityScale = dropSpeed;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
