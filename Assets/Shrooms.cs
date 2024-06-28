@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using MongoDB.Driver;
+using System.Collections;
 using UnityEngine;
 
 public class MushroomExplosion : MonoBehaviour
@@ -26,31 +27,44 @@ public class MushroomExplosion : MonoBehaviour
     {
         if (!hasExploded && (collision.gameObject.tag == "Player" || collision.gameObject.tag == "Bullet"))
         {
-            Explode();
+            Explode(collision);
+            
+            //PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+            //player.LostLife();
+            //player.Respawn();
         }
     }
 
-    void Explode()
+    void Explode(Collider2D collision)
     {
         hasExploded = true; // Đánh dấu đã nổ
 
         // Kích hoạt hiệu ứng nổ
         animator.SetTrigger("Explode");
 
+
         // Phát âm thanh nổ nếu có
         if (explosionSound != null)
         {
             audioSource.PlayOneShot(explosionSound);
         }
-
+        
         // Phá hủy đối tượng nấm sau khi animation kết thúc
-        StartCoroutine(DestroyAfterAnimation());
+        StartCoroutine(DestroyAfterAnimation(collision));
+        //Destroy(gameObject);
     }
 
-    private IEnumerator DestroyAfterAnimation()
+    private IEnumerator DestroyAfterAnimation(Collider2D collision)
     {
         // Chờ cho đến khi animation nổ kết thúc
         yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
         Destroy(gameObject);
+        PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+        if (player != null)
+        {
+            player.LostLife();
+            player.Respawn();
+        }
+        
     }
 }

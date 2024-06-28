@@ -33,12 +33,12 @@ public class FallFaceBlock : MonoBehaviour
         }
     }
 
-    //private void Restore()
-    //{
-    //    rb.isKinematic = true;
-    //    rb.velocity = Vector2.zero;
-    //    rb.angularDrag = 0;
-    //    transform.position = restorePoint.position;
-    //    isFall = false;
-    //}
+    private void Restore()
+    {
+        rb.isKinematic = true;
+        rb.velocity = Vector2.zero;
+        rb.angularDrag = 0;
+        transform.position = restorePoint.position;
+        isFall = false;
+    }
 }
