@@ -196,7 +196,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 5
   maxHeight: 4.04
-  minHeight: -5.22
+  minHeight: -1
   ground:
     serializedVersion: 2
     m_Bits: 64
