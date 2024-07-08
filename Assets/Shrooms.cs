@@ -20,7 +20,7 @@ public class MushroomExplosion : MonoBehaviour
     //void OnTriggerEnter2D(Collision2D collision)
     //{
     //    // Kiểm tra va chạm với đối tượng khác (có thể là nhân vật hoặc đạn)
-        
+
     //}
     private void OnTriggerEnter2D(Collider2D collision)
     {
