@@ -208,10 +208,15 @@ public class PlayerController : MonoBehaviour
                 tilemapRenderer.enabled = true;
             }
         }
+        if (other.gameObject.tag == "NextMap")
+        {
+            isLeadderboadOpen = true;
+        } 
         if (other.gameObject.tag == "playSong")
         {
             ChangeSong();
         }
+
     }
 
     private void OnTriggerExit2D(Collider2D other)
