@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     private enum State { idle, running, jumping, falling, hurt, climb, idleclimb }
     private State state = State.idle;
     [SerializeField] private LayerMask ground;
-    [SerializeField] private float speed = 5f;
+    [SerializeField] public float speed = 5f;
     [SerializeField] private float climbspeed = 3f;
     [SerializeField] private float jumpForce = 10f;
     [SerializeField] private int cherries = 0;
