@@ -27,13 +27,20 @@ public class MushroomExplosion : MonoBehaviour
     {
         if (!hasExploded && (collision.gameObject.tag == "Player" || collision.gameObject.tag == "Bullet"))
         {
-            Explode(collision);
-            
-            //PlayerController player = collision.gameObject.GetComponent<PlayerController>();
-            //player.LostLife();
-            //player.Respawn();
+            Explode();
+            PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+            if (player != null)
+            {
+                player.HandleHealth();
+            }
         }
     }
+
+
+    //IEnumerator WaitSecond(float seconds)
+    //{
+    //    yield return WaitForSeconds(seconds);
+    //}
 
     void Explode(Collider2D collision)
     {
